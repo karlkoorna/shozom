@@ -1,4 +1,4 @@
-﻿[*.cs]
+[*.cs]
 dotnet_diagnostic.IDE0058.severity = none
 dotnet_diagnostic.CS4014.severity = none
 dotnet_diagnostic.CS8509.severity = none

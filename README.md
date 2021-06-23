@@ -1,4 +1,4 @@
-﻿![Logo](https://github.com/karlkoorna/shozom/raw/master/Resources/Logo.ico)
+![Logo](https://github.com/karlkoorna/shozom/raw/master/Resources/Logo.ico)
 
 # Shozom
 Shazam on Windows with toast.
