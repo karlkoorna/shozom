@@ -78,6 +78,13 @@ namespace Shozom {
 				.Show();
 		}
 
+		public static void ShowTimeout() {
+			new ToastContentBuilder()
+				.AddText("Timeout")
+				.AddText("Sorry, we took longer than expected")
+				.Show();
+		}
+
 		public static void ShowError(string msg) {
 			new ToastContentBuilder()
 				.AddText("Error")

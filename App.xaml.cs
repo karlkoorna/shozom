@@ -48,7 +48,7 @@ namespace Shozom {
 				if (match == null) Toaster.ShowFailure();
 				else await Toaster.ShowSuccess(match);
 			} catch (OperationCanceledException) {
-				Toaster.ShowError("Took longer than expected");
+				Toaster.ShowTimeout();
 			} catch (Exception ex) {
 				Toaster.ShowError(ex.Message);
 			}
