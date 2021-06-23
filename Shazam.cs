@@ -20,7 +20,7 @@ namespace Shozom {
 		public static async Task<ShozomMatch> IdentifyAsync(string deviceId, CancellationToken cancel) {
 			var device = _enumerator.GetDevice(deviceId);
 			if (device == null || device.State != DeviceState.Active) throw new ArgumentException("Device not available");
-			
+
 			using var capture = device.DataFlow switch {
 				DataFlow.Capture => new WasapiCapture(device),
 				DataFlow.Render => new WasapiLoopbackCapture(device)
