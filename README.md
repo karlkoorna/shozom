@@ -1,7 +1,9 @@
-![Logo](https://github.com/karlkoorna/shozom/raw/master/Resources/Logo.ico)
+<img src="https://github.com/karlkoorna/shozom/raw/master/Resources/Logo.ico" alt="Logo" width="128">
 
 # Shozom
 Shazam on Windows with toast.
+
+![Logo](https://github.com/karlkoorna/shozom/raw/master/Resources/Example.png)
 
 ## Usage
 
