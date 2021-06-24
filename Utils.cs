@@ -20,7 +20,7 @@ namespace Shozom {
 			var raw = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadWrite, image.PixelFormat);
 			var data = new byte[raw.Stride * image.Height];
 			Marshal.Copy(raw.Scan0, data, 0, data.Length);
-			
+
 			var kernel = ComputeGaussianKernel1D(radius, sigma);
 
 			for (var yy = 0; yy < image.Height; yy++) {

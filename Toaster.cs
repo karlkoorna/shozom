@@ -94,9 +94,7 @@ namespace Shozom {
 
 		private static Bitmap CreateThumbImage(Bitmap coverImage) {
 			var thumbImage = new Bitmap(48, 48);
-			
 			thumbImage.PlaceImage(coverImage, 0, 0, 48, 48, 2);
-
 			return thumbImage;
 		}
 

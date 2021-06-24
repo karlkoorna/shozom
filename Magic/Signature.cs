@@ -52,13 +52,13 @@ namespace Shozom.Magic {
 			return stream.ToArray();
 		}
 
-		private static byte[][] GetBandData(Landmarker finder) {
-			return finder.EnumerateBandedLandmarks().Select(GetBandData).ToArray();
+		private static byte[][] GetBandData(Landmarker landmarker) {
+			return landmarker.EnumerateBandedLandmarks().Select(GetBandData).ToArray();
 		}
 
 		private static byte[] GetBandData(IEnumerable<Landmark> landmarks) {
-			using var mem = new MemoryStream();
-			using var writer = new BinaryWriter(mem);
+			using var stream = new MemoryStream();
+			using var writer = new BinaryWriter(stream);
 
 			var stripeIndex = 0;
 
@@ -69,8 +69,7 @@ namespace Shozom.Magic {
 					writer.Write(stripeIndex);
 				}
 
-				if (landmark.StripeIndex < stripeIndex)
-					throw new InvalidOperationException();
+				if (landmark.StripeIndex < stripeIndex) throw new InvalidOperationException();
 
 				writer.Write(Convert.ToByte(landmark.StripeIndex - stripeIndex));
 				writer.Write(Convert.ToUInt16(landmark.InterpolatedLogMagnitude));
@@ -79,8 +78,8 @@ namespace Shozom.Magic {
 				stripeIndex = landmark.StripeIndex;
 			}
 
-			while (mem.Length % 4 != 0) writer.Write((byte) 0);
-			return mem.ToArray();
+			while (stream.Length % 4 != 0) writer.Write((byte) 0);
+			return stream.ToArray();
 		}
 
 		private static int GetSampleRateCode(int sampleRate) {

@@ -15,28 +15,28 @@ namespace Shozom.Magic {
 		public const int RADIUS_TIME = 47;
 		public const int RADIUS_FREQ = 9;
 
-		// Landmarks per second in a band
+		// Landmarks per second in a band.
 		private const int RATE = 12;
 
-		private static readonly IReadOnlyList<int> BAND_FREQS = new[] { 250, 520, 1450, 3500, 5500 };
+		private static readonly IReadOnlyList<int> BandFreqs = new[] { 250, 520, 1450, 3500, 5500 };
 
-		private static readonly int MIN_BIN = Math.Max(Analyser.FreqToBin(BAND_FREQS.Min()), RADIUS_FREQ);
-		private static readonly int MAX_BIN = Math.Min(Analyser.FreqToBin(BAND_FREQS.Max()), Analyser.BIN_COUNT - RADIUS_FREQ);
+		private static readonly int MinBin = Math.Max(Analyser.FreqToBin(BandFreqs.Min()), RADIUS_FREQ);
+		private static readonly int MaxBin = Math.Min(Analyser.FreqToBin(BandFreqs.Max()), Analyser.BIN_COUNT - RADIUS_FREQ);
 
-		private static readonly float MIN_MAGN_SQUARED = 1f / 512 / 512;
-		private static readonly float LOG_MIN_MAGN_SQUARED = MathF.Log(MIN_MAGN_SQUARED);
+		private static readonly float MinMagnitudeSquared = 1f / 512 / 512;
+		private static readonly float LogMinMagnitudeSquared = MathF.Log(MinMagnitudeSquared);
 
 		private readonly Analyser _analysis;
 		private readonly IReadOnlyList<List<Landmark>> _bands;
 
 		public Landmarker(Analyser analysis) {
 			_analysis = analysis;
-			_bands = Enumerable.Range(0, BAND_FREQS.Count - 1).Select(_ => new List<Landmark>()).ToList();
+			_bands = Enumerable.Range(0, BandFreqs.Count - 1).Select(_ => new List<Landmark>()).ToList();
 		}
 
 		public void Find(int stripe) {
-			for (var bin = MIN_BIN; bin < MAX_BIN; bin++) {
-				if (_analysis.GetMagnitudeSquared(stripe, bin) < MIN_MAGN_SQUARED) continue;
+			for (var bin = MinBin; bin < MaxBin; bin++) {
+				if (_analysis.GetMagnitudeSquared(stripe, bin) < MinMagnitudeSquared) continue;
 				if (!IsPeak(stripe, bin, RADIUS_TIME, 0)) continue;
 				if (!IsPeak(stripe, bin, 3, RADIUS_FREQ)) continue;
 
@@ -54,8 +54,8 @@ namespace Shozom.Magic {
 
 		private static int GetBandIndex(float bin) {
 			var freq = Analyser.BinToFreq(bin);
-			if (freq < BAND_FREQS[0]) return -1;
-			for (var i = 1; i < BAND_FREQS.Count; i++) if (freq < BAND_FREQS[i]) return i - 1;
+			if (freq < BandFreqs[0]) return -1;
+			for (var i = 1; i < BandFreqs.Count; i++) if (freq < BandFreqs[i]) return i - 1;
 			return -1;
 		}
 
@@ -63,10 +63,9 @@ namespace Shozom.Magic {
 			// Quadratic Interpolation of Spectral Peaks
 			// https://stackoverflow.com/a/59140547
 			// https://ccrma.stanford.edu/~jos/sasp/Quadratic_Interpolation_Spectral_Peaks.html
-
 			// https://ccrma.stanford.edu/~jos/parshl/Peak_Detection_Steps_3.html
-			// "We have found empirically that the frequencies tend to be about twice as accurate"
-			// "when dB magnitude is used rather than just linear magnitude"
+			// "We have found empirically that the frequencies tend to be about twice as accurate."
+			// "when dB magnitude is used rather than just linear magnitude."
 
 			var alpha = GetLogMagnitude(stripe, bin - 1);
 			var beta = GetLogMagnitude(stripe, bin);
@@ -77,7 +76,7 @@ namespace Shozom.Magic {
 		}
 
 		private float GetLogMagnitude(int stripe, int bin) {
-			return 18 * 1024 * (1 - MathF.Log(_analysis.GetMagnitudeSquared(stripe, bin)) / LOG_MIN_MAGN_SQUARED);
+			return 18 * 1024 * (1 - (MathF.Log(_analysis.GetMagnitudeSquared(stripe, bin)) / LogMinMagnitudeSquared));
 		}
 
 		private bool IsPeak(int stripe, int bin, int stripeRadius, int binRadius) {
