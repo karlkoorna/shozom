@@ -12,7 +12,7 @@ using Force.Crc32;
 
 namespace Shozom.Magic {
 
-	static class Signature {
+	internal static class Signature {
 
 		public static byte[] Create(int sampleRate, int sampleCount, Landmarker landmarker) {
 			using var stream = new MemoryStream();

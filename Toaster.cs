@@ -10,7 +10,7 @@ using System.Windows;
 
 namespace Shozom {
 
-	static class Toaster {
+	internal static class Toaster {
 
 		private static readonly string TempPath = Path.GetTempPath();
 

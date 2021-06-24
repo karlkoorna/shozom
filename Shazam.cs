@@ -10,7 +10,7 @@ using Shozom.Magic;
 
 namespace Shozom {
 
-	public static class Shazam {
+	internal static class Shazam {
 
 		private static readonly MMDeviceEnumerator _enumerator = new();
 		private static readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(3) };

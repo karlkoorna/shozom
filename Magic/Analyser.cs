@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace Shozom.Magic {
 
-	class Analyser {
+	internal class Analyser {
 
 		public const int SAMPLE_RATE = 16000;
 		public const int CHUNKS_PER_SECOND = 125;

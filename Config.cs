@@ -8,14 +8,14 @@ using NAudio.CoreAudioApi;
 
 namespace Shozom {
 
-	class ConfigObject {
+	internal class ConfigObject {
 
 		[JsonPropertyName("device")]
 		public string Device { get; set; }
 
 	}
 
-	static class Config {
+	internal static class Config {
 
 		private static readonly MMDeviceEnumerator _enumerator = new();
 

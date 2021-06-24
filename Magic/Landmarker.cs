@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace Shozom.Magic {
 
-	class Landmarker {
+	internal class Landmarker {
 
 		public const int RADIUS_TIME = 47;
 		public const int RADIUS_FREQ = 9;

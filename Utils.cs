@@ -6,8 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Shozom {
 
-
-    public static class Utils {
+	internal static class Utils {
 
 		private static float[] ComputeGaussianKernel1D(int radius, float sigma) {
 			var kernel = new float[radius * 2 + 1];

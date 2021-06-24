@@ -2,7 +2,7 @@
 
 namespace Shozom {
 
-	public class ShozomMatch {
+	internal class ShozomMatch {
 
 		public string Title { get; set; }
 
@@ -16,14 +16,14 @@ namespace Shozom {
 
 	#region Shazam Request
 
-	public class ShazamRequest {
+	internal class ShazamRequest {
 
 		[JsonPropertyName("signature")]
 		public ShazamSignature Signature { get; set; }
 
 	}
 
-	public class ShazamSignature {
+	internal class ShazamSignature {
 
 		[JsonPropertyName("uri")]
 		public string Uri { get; set; }
@@ -37,7 +37,7 @@ namespace Shozom {
 
 	#region Shazam Response
 
-	public class ShazamResponse {
+	internal class ShazamResponse {
 
 		[JsonPropertyName("track")]
 		public ShazamTrack Track { get; set; }
@@ -47,7 +47,7 @@ namespace Shozom {
 
 	}
 
-	public class ShazamTrack {
+	internal class ShazamTrack {
 
 		[JsonPropertyName("title")]
 		public string Title { get; set; }
@@ -63,7 +63,7 @@ namespace Shozom {
 
 	}
 
-	public class ShazamImages {
+	internal class ShazamImages {
 
 		[JsonPropertyName("coverart")]
 		public string Cover { get; set; }
@@ -73,7 +73,7 @@ namespace Shozom {
 
 	}
 
-	public class ShazamShare {
+	internal class ShazamShare {
 
 		[JsonPropertyName("href")]
 		public string Link { get; set; }

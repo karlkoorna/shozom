@@ -6,7 +6,7 @@
 
 namespace Shozom.Magic {
 
-	readonly struct Landmark {
+	internal readonly struct Landmark {
 
 		public readonly int StripeIndex;
 		public readonly float InterpolatedBin;
