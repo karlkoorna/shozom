@@ -8,18 +8,23 @@ namespace Shozom {
 
 		private record Device(string Id, string Name);
 
+		private static readonly MMDeviceEnumerator Enumerator = new();
+
 		public SettingsWindow() {
 			InitializeComponent();
 
-			var devices = new MMDeviceEnumerator().EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active).Select(device => {
+			DevicePicker.SelectedValuePath = "Id";
+			DevicePicker.DisplayMemberPath = "Name";
+			DevicePicker.SelectionChanged += DevicePicker_OnSelectionChanged;
+		}
+
+		public void Load() {
+			var devices = Enumerator.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active).Select(device => {
 				return new Device(device.ID, (device.DataFlow switch { DataFlow.Capture => "IN – ", DataFlow.Render => "OUT – ", _ => "UNK – " }) + device.FriendlyName);
 			}).ToList();
 
 			DevicePicker.ItemsSource = devices;
-			DevicePicker.SelectedValuePath = "Id";
-			DevicePicker.DisplayMemberPath = "Name";
 			DevicePicker.SelectedValue = Config.Object.Device;
-			DevicePicker.SelectionChanged += DevicePicker_OnSelectionChanged;
 		}
 
 		private void DevicePicker_OnSelectionChanged(object sender, RoutedEventArgs e) {

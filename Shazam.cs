@@ -12,14 +12,14 @@ namespace Shozom {
 
 	internal static class Shazam {
 
-		private static readonly MMDeviceEnumerator _enumerator = new();
-		private static readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(3) };
+		private static readonly MMDeviceEnumerator Enumerator = new();
+		private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(3) };
 
 		private static readonly string _deviceId = Guid.NewGuid().ToString();
 
 		public static async Task<ShozomMatch> IdentifyAsync(string deviceId, CancellationToken cancel) {
-			var device = _enumerator.GetDevice(deviceId);
-			if (device == null || device.State != DeviceState.Active) throw new ArgumentException("Device not available");
+			var device = Enumerator.GetDevice(deviceId);
+			if (device == null || device.State != DeviceState.Active) throw new ArgumentException("Selected device not available");
 
 			using var capture = device.DataFlow switch {
 				DataFlow.Capture => new WasapiCapture(device),
@@ -29,38 +29,38 @@ namespace Shozom {
 			var buffer = new BufferedWaveProvider(capture.WaveFormat) { ReadFully = false, DiscardOnBufferOverflow = true };
 			var samples = new MediaFoundationResampler(buffer, new WaveFormat(16000, 16, 1)).ToSampleProvider();
 
-			capture.DataAvailable += (s, e) => { buffer.AddSamples(e.Buffer, 0, e.BytesRecorded); };
+			capture.DataAvailable += (_, e) => { buffer.AddSamples(e.Buffer, 0, e.BytesRecorded); };
 			capture.StartRecording();
 
 			var analyser = new Analyser();
-			var finder = new Landmarker(analyser);
+			var landmarker = new Landmarker(analyser);
 
 			var retryMs = 3000;
 
 			while (true) {
 				if (cancel.IsCancellationRequested) {
 					capture.StopRecording();
-					throw new OperationCanceledException("Took longer than expected");
+					throw new OperationCanceledException();
 				}
 
 				if (buffer.BufferedDuration.TotalSeconds < 1) {
 					Thread.Sleep(100);
 					continue;
 				}
-				
+
 				analyser.ReadChunk(samples);
 
-				if (analyser.StripeCount > 2 * Landmarker.RADIUS_TIME) finder.Find(analyser.StripeCount - Landmarker.RADIUS_TIME - 1);
+				if (analyser.StripeCount > 2 * Landmarker.RADIUS_TIME) landmarker.Find(analyser.StripeCount - Landmarker.RADIUS_TIME - 1);
 				if (analyser.ProcessedMs < retryMs) continue;
 
 				var body = new ShazamRequest {
 					Signature = new ShazamSignature {
-						Uri = "data:audio/vnd.shazam.sig;base64," + Convert.ToBase64String(Signature.Create(Analyser.SAMPLE_RATE, analyser.ProcessedSamples, finder)),
+						Uri = "data:audio/vnd.shazam.sig;base64," + Convert.ToBase64String(Signature.Create(Analyser.SAMPLE_RATE, analyser.ProcessedSamples, landmarker)),
 						SampleMs = analyser.ProcessedMs
 					}
 				};
 
-				var res = await _http.PostAsync($"https://amp.shazam.com/discovery/v5/en/US/android/-/tag/{_deviceId}/{Guid.NewGuid()}", new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json"), cancel);
+				var res = await Http.PostAsync($"https://amp.shazam.com/discovery/v5/en/US/android/-/tag/{_deviceId}/{Guid.NewGuid()}", new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json"), cancel);
 				var data = JsonSerializer.Deserialize<ShazamResponse>(await res.Content.ReadAsStringAsync(cancel));
 
 				if (data.RetryMs != null) {

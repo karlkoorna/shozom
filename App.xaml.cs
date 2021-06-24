@@ -10,7 +10,7 @@ namespace Shozom {
 		public const string CONFIG_PATH = "Shozom.json";
 		public const int IDENTIFY_TIMEOUT = 30000;
 
-		private SettingsWindow _settingsWindow;
+		private readonly SettingsWindow _settingsWindow;
 		private readonly NotifyIcon _notifyIcon;
 
 		private bool _isListening;
@@ -26,10 +26,18 @@ namespace Shozom {
 			menuStrip.Items.Add("Settings", null, OnClickSettings);
 			menuStrip.Items.Add("Exit", null, OnClickExit);
 
-			_notifyIcon = new NotifyIcon();
-			_notifyIcon.ContextMenuStrip = menuStrip;
-			_notifyIcon.Icon = Shozom.Properties.Resources.Logo;
-			_notifyIcon.Visible = true;
+			_settingsWindow = new SettingsWindow();
+			_settingsWindow.Closing += (_, e) => {
+				e.Cancel = true;
+				_settingsWindow.Hide();
+			};
+
+			_notifyIcon = new NotifyIcon {
+				ContextMenuStrip = menuStrip,
+				Icon = Shozom.Properties.Resources.Logo,
+				Visible = true
+			};
+
 			_notifyIcon.Click += OnClickListen;
 		}
 
@@ -57,8 +65,7 @@ namespace Shozom {
 		}
 
 		private void OnClickSettings(object sender, EventArgs e) {
-			_settingsWindow?.Close();
-			_settingsWindow = new SettingsWindow();
+			_settingsWindow.Load();
 			_settingsWindow.Show();
 		}
 
