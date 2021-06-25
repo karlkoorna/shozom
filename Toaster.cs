@@ -33,7 +33,7 @@ namespace Shozom {
 			var args = ToastArguments.Parse(e.Argument);
 
 			var thread = new Thread(() => {
-				if (args.Contains("copy")) try { Clipboard.SetText(args.Get("copy")); } catch {}
+				if (args.Contains("copy")) try { System.Windows.Forms.Clipboard.SetDataObject(args.Get("copy"), true, 5, 150); } catch {}
 			});
 
 			thread.SetApartmentState(ApartmentState.STA);
