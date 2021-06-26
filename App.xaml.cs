@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Input;
 
 namespace Shozom {
 
@@ -13,6 +14,8 @@ namespace Shozom {
 		private readonly SettingsWindow _settingsWindow;
 		private readonly NotifyIcon _notifyIcon;
 
+		private readonly HotkeyListener _hotkeyListener;
+
 		private bool _isListening;
 
 		private App() {
@@ -22,11 +25,15 @@ namespace Shozom {
 			Config.Load(CONFIG_PATH);
 			Toaster.Setup();
 
+			_hotkeyListener = new HotkeyListener();
+			_hotkeyListener.Activated += StartListening;
+			UpdateHotkey();
+
 			var menuStrip = new ContextMenuStrip();
 			menuStrip.Items.Add("Settings", null, OnClickSettings);
 			menuStrip.Items.Add("Exit", null, OnClickExit);
 
-			_settingsWindow = new SettingsWindow();
+			_settingsWindow = new SettingsWindow(this);
 			_settingsWindow.Closing += (_, e) => {
 				e.Cancel = true;
 				_settingsWindow.Hide();
@@ -41,11 +48,35 @@ namespace Shozom {
 			_notifyIcon.Click += OnClickListen;
 		}
 
-		private async void OnClickListen(object sender, EventArgs e) {
-			if (e is MouseEventArgs eMouse && eMouse.Button != MouseButtons.Left) return;
+		private void OnClickListen(object sender, EventArgs e) {
+			if (e is System.Windows.Forms.MouseEventArgs eMouse && eMouse.Button == MouseButtons.Left) StartListening();
+		}
 
+		private void OnClickSettings(object sender, EventArgs e) {
+			_settingsWindow.ReloadDevices();
+			_settingsWindow.Show();
+		}
+
+		private void OnClickExit(object sender, EventArgs e) {
+			_notifyIcon.Dispose();
+			Environment.Exit(0);
+		}
+
+		public void UpdateHotkey() {
+			if (Config.Object.Hotkey.Key != Key.None) _hotkeyListener.SetHotkey(Config.Object.Hotkey.Mod, Config.Object.Hotkey.Key);
+		}
+
+		private async void StartListening() {
 			if (_isListening) return;
-			var stopAnimating = AnimateTray();
+			_isListening = true;
+			_notifyIcon.Icon = Shozom.Properties.Resources.LogoActiveAlt;
+
+			ushort frame = 0;
+			var timer = new System.Timers.Timer(500);
+			timer.Start();
+			timer.Elapsed += (_, _) => {
+				_notifyIcon.Icon = frame++ % 2 == 0 ? Shozom.Properties.Resources.LogoActive : Shozom.Properties.Resources.LogoActiveAlt;
+			};
 
 			try {
 				var cancel = new CancellationTokenSource();
@@ -61,35 +92,9 @@ namespace Shozom {
 				Toaster.ShowError(ex.Message);
 			}
 
-			stopAnimating();
-		}
-
-		private void OnClickSettings(object sender, EventArgs e) {
-			_settingsWindow.Load();
-			_settingsWindow.Show();
-		}
-
-		private void OnClickExit(object sender, EventArgs e) {
-			_notifyIcon.Dispose();
-			Environment.Exit(0);
-		}
-
-		private Action AnimateTray() {
-			_isListening = true;
-			_notifyIcon.Icon = Shozom.Properties.Resources.LogoActiveAlt;
-
-			ushort index = 0;
-			var timer = new System.Timers.Timer(500);
-			timer.Elapsed += (_, _) => {
-				_notifyIcon.Icon = index++ % 2 == 0 ? Shozom.Properties.Resources.LogoActive : Shozom.Properties.Resources.LogoActiveAlt;
-			};
-
-			timer.Start();
-			return () => {
-				_isListening = false;
-				_notifyIcon.Icon = Shozom.Properties.Resources.Logo;
-				timer.Stop();
-			};
+			_notifyIcon.Icon = Shozom.Properties.Resources.Logo;
+			_isListening = false;
+			timer.Stop();
 		}
 
 	}

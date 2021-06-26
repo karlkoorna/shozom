@@ -1,17 +1,32 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using System.Windows.Input;
 using NAudio.CoreAudioApi;
 
 namespace Shozom {
 
 	internal class ConfigObject {
 
+		internal class HotkeyObject {
+
+			[JsonPropertyName("key")]
+			public Key Key { get; set; }
+
+			[JsonPropertyName("mod")]
+			public ModifierKeys Mod { get; set; }
+
+		}
+
 		[JsonPropertyName("device")]
 		public string Device { get; set; }
+
+		[JsonPropertyName("hotkey")]
+		public HotkeyObject Hotkey { get; set; }
 
 	}
 
@@ -21,7 +36,11 @@ namespace Shozom {
 
 		private static void Create() {
 			Object = new ConfigObject {
-				Device = Enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia).ID
+				Device = Enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia).ID,
+				Hotkey = new ConfigObject.HotkeyObject {
+					Key = Key.None,
+					Mod = 0
+				}
 			};
 		}
 
@@ -34,16 +53,15 @@ namespace Shozom {
 
 		public static ConfigObject Object { get; private set; }
 
-		private static string Path;
+		public static string Path;
 
 		public static void Load(string path) {
 			Path = path;
 
 			try {
 				if (Object == null) Object = JsonSerializer.Deserialize<ConfigObject>(File.ReadAllText(Path));
-				var check = Check();
 				Restore();
-				if (Check() != check) Save();
+				Save();
 			} catch (Exception) {
 				Create();
 				Save();
@@ -52,13 +70,10 @@ namespace Shozom {
 		}
 
 		public static void Save() {
-			var str = JsonSerializer.Serialize(Object, typeof(ConfigObject), new JsonSerializerOptions { WriteIndented = true });
-			File.WriteAllText(Path, Regex.Replace(str, "(?<=^|  )(  )", "\t", RegexOptions.Multiline) + "\n");
-		}
-
-		private static int Check() {
-			return Object.GetType().GetProperties().Select(prop => prop.GetValue(Object))
-				.Where(value => value != null).Select(value => value.GetHashCode()).Aggregate((code, nextCode) => code ^ nextCode);
+			var str = JsonSerializer.Serialize(Object, typeof(ConfigObject), new JsonSerializerOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, WriteIndented = true });
+			var str2 = Regex.Replace(str, "(?<=^|  )(  )", "\t", RegexOptions.Multiline);
+			var str3 = Regex.Replace(str2, "\r\n", "\n");
+			File.WriteAllText(Path, str3 + "\n", Encoding.UTF8);
 		}
 
 		#endregion

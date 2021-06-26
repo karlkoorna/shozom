@@ -3,18 +3,62 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Shozom"
         MinWidth="480" MaxWidth="480" Width="480"
-        MinHeight="120" MaxHeight="120" Height="120"
+        MinHeight="210" MaxHeight="210" Height="210"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize">
     <StackPanel Margin="16">
         <TextBlock
-            Padding="0,0,0,4"
+            Padding="0,0,0,6"
             FontSize="14"
             FontWeight="DemiBold"
             Text="Device" />
         <ComboBox
             Name="DevicePicker"
             Padding="5,4,4,5"
-            FontFamily="Consolas" />
+            FontFamily="Consolas"
+            SelectedValuePath="Id"
+            DisplayMemberPath="Name"
+            SelectionChanged="DevicePicker_OnSelectionChanged" />
+        <TextBlock
+            Margin="0,16,0,0"
+            Padding="0,0,0,6"
+            FontSize="14"
+            FontWeight="DemiBold"
+            Text="Hotkey" />
+        <ComboBox
+            Name="HotkeyPicker"
+            Padding="5,4,4,5"
+            FontFamily="Consolas"
+            SelectionChanged="HotkeyPicker_OnSelectionChanged" />
+        <StackPanel Orientation="Horizontal">
+            <CheckBox
+                Name="HotkeyCtrl"
+                Grid.Column="0"
+                Margin="0,6,6,6"
+                HorizontalAlignment="Center">
+                <TextBlock>Ctrl</TextBlock>
+            </CheckBox>
+            <CheckBox
+                Name="HotkeyAlt"
+                Grid.Column="1"
+                Margin="6"
+                HorizontalAlignment="Center">
+                <TextBlock>Alt</TextBlock>
+            </CheckBox>
+            <CheckBox
+                Name="HotkeyShift"
+                Grid.Column="2"
+                Margin="6"
+                HorizontalAlignment="Center">
+                <TextBlock>Shift</TextBlock>
+            </CheckBox>
+            <CheckBox
+                Name="HotkeyWin"
+                Grid.Column="3"
+                Margin="6"
+                HorizontalAlignment="Center">
+                <TextBlock>Win</TextBlock>
+            </CheckBox>
+        </StackPanel>
     </StackPanel>
 </Window>
