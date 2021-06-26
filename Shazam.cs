@@ -15,19 +15,20 @@ namespace Shozom {
 		private static readonly MMDeviceEnumerator Enumerator = new();
 		private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(3) };
 
-		private static readonly string _deviceId = Guid.NewGuid().ToString();
+		private static readonly string DeviceId = Guid.NewGuid().ToString();
 
 		public static async Task<ShozomMatch> IdentifyAsync(string deviceId, CancellationToken cancel) {
 			var device = Enumerator.GetDevice(deviceId);
 			if (device == null || device.State != DeviceState.Active) throw new ArgumentException("Selected device not available");
 
-			using var capture = device.DataFlow switch {
+			var capture = device.DataFlow switch {
 				DataFlow.Capture => new WasapiCapture(device),
 				DataFlow.Render => new WasapiLoopbackCapture(device)
 			};
 
 			var buffer = new BufferedWaveProvider(capture.WaveFormat) { ReadFully = false, DiscardOnBufferOverflow = true };
-			var samples = new MediaFoundationResampler(buffer, new WaveFormat(16000, 16, 1)).ToSampleProvider();
+			using var resampler = new MediaFoundationResampler(buffer, new WaveFormat(16000, 16, 1));
+			var samples = resampler.ToSampleProvider();
 
 			capture.DataAvailable += (_, e) => { buffer.AddSamples(e.Buffer, 0, e.BytesRecorded); };
 			capture.StartRecording();
@@ -60,17 +61,15 @@ namespace Shozom {
 					}
 				};
 
-				var res = await Http.PostAsync($"https://amp.shazam.com/discovery/v5/en/US/android/-/tag/{_deviceId}/{Guid.NewGuid()}", new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json"), cancel);
+				using var res = await Http.PostAsync($"https://amp.shazam.com/discovery/v5/en/US/android/-/tag/{DeviceId}/{Guid.NewGuid()}", new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json"), cancel);
 				var data = JsonSerializer.Deserialize<ShazamResponse>(await res.Content.ReadAsStringAsync(cancel));
 
-				if (data.RetryMs != null) {
-					if (data.RetryMs == 0) return null;
+				if (data.RetryMs > 0) {
 					retryMs = (int) data.RetryMs;
 					continue;
 				}
 
 				capture.StopRecording();
-
 				if (data.Track == null) return null;
 				return new ShozomMatch {
 					Title = data.Track.Title,
